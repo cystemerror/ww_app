@@ -18,7 +18,7 @@ def calculate_points(calories, sat_fat, sugar, protein):
     return round(points, 1)
 
 # Streamlit app layout
-st.title('Weight Watchers Points Calculator')
+st.title(':pie: Weight Watchers PyCalc :pie:')
 
 # Food search
 food_query = st.text_input('Enter a food name to search:')
