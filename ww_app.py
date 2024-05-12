@@ -59,3 +59,11 @@ protein = st.number_input('Enter protein (grams):', min_value=0.0, value=float(i
 if st.button('Calculate Points'):
     points = calculate_points(calories, sat_fat, sugar, protein)
     st.subheader(f'The Weight Watchers points for this food are: {points}')
+
+# Copyright and creator info
+st.markdown("""
+<footer style='text-align: center; color: gray; font-size: small'>
+    &copy; 2024 Weight Watchers PyCalc. All rights reserved. <br>
+    Created by Chris K.
+</footer>
+""", unsafe_allow_html=True)
