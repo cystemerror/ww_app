@@ -11,6 +11,11 @@ Weight Watchers PyCalc is a Streamlit-based web application that allows users to
 - **Food Log**: Users can log their food entries and view their food log within a specified date range.
 - **Deletion**: Users can delete individual entries from their food log.
 
+## Future Features
+- **Barcode scanning**: Scan a barcode of an item to automatically input the weight watchers point calculation values
+- **Weight Tracking**: Enter your weight to track your progress over any period of time
+- **AI Suggestions**: Receive suggested changes to logged food items
+
 ## Installation
 
 ### Prerequisites
