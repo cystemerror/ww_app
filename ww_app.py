@@ -82,7 +82,7 @@ else:
 
 if st.session_state.authentication_status == True:
     st.button("Logout", on_click=lambda: [st.session_state.update(authentication_status=None), st.rerun()])
-    
+
     if users_collection.find_one({"username": username})["access_level"] == "admin":
         st.sidebar.title("Admin Panel")
         admin_action = st.sidebar.selectbox("Select Action", ["Create User", "Edit User"])
@@ -97,7 +97,7 @@ if st.session_state.authentication_status == True:
                 if new_user_name and new_user_username and new_user_password:
                     hashed_password = get_hashed_password(new_user_password)
                     users_collection.insert_one({
-                        "name":new_user_name,
+                        "name": new_user_name,
                         "username": new_user_username,
                         "password": hashed_password,
                         "access_level": new_user_access_level
@@ -127,35 +127,47 @@ if st.session_state.authentication_status == True:
 
     st.subheader(f"Welcome, {name}!")
     
-    # Food search
-    food_query = st.text_input('Enter a food name to search:')
-    initial_values = {
-        'calories': 0,
-        'sat_fat': 0.0,
-        'sugar': 0.0,
-        'protein': 0.0
-    }
+    # Food search or manual entry
+    entry_method = st.radio("How would you like to enter food details?", ("Search Food", "Manual Entry"))
 
-    if food_query:
-        food_data = fetch_food_data(food_query)
-        if 'foods' in food_data:
-            # Create a selectbox with the names of the foods including serving details
-            food_options = {
-                f"{item['food_name']} ({item['serving_unit']}, {item['serving_weight_grams']}g/{item['serving_weight_grams']/28:.2f}oz)": item
-                for item in food_data['foods']
-            }
-            selected_food = st.selectbox('Select a food:', list(food_options.keys()))
+    if entry_method == "Search Food":
+        food_query = st.text_input('Enter a food name to search:')
+        initial_values = {
+            'calories': 0,
+            'sat_fat': 0.0,
+            'sugar': 0.0,
+            'protein': 0.0
+        }
 
-            # Update initial values based on selected food
-            if selected_food:
-                food_details = food_options[selected_food]
-                initial_values['calories'] = food_details.get('nf_calories', 0)
-                initial_values['sat_fat'] = food_details.get('nf_saturated_fat', 0.0)
-                initial_values['sugar'] = food_details.get('nf_sugars', 0.0)
-                initial_values['protein'] = food_details.get('nf_protein', 0.0)
-        else:
-            st.error("Failed to fetch data. Please check the food name or try another query.")
+        if food_query:
+            food_data = fetch_food_data(food_query)
+            if 'foods' in food_data:
+                # Create a selectbox with the names of the foods including serving details
+                food_options = {
+                    f"{item['food_name']} ({item['serving_unit']}, {item['serving_weight_grams']}g/{item['serving_weight_grams']/28:.2f}oz)": item
+                    for item in food_data['foods']
+                }
+                selected_food = st.selectbox('Select a food:', list(food_options.keys()))
+
+                # Update initial values based on selected food
+                if selected_food:
+                    food_details = food_options[selected_food]
+                    initial_values['calories'] = food_details.get('nf_calories', 0)
+                    initial_values['sat_fat'] = food_details.get('nf_saturated_fat', 0.0)
+                    initial_values['sugar'] = food_details.get('nf_sugars', 0.0)
+                    initial_values['protein'] = food_details.get('nf_protein', 0.0)
+            else:
+                st.error("Failed to fetch data. Please check the food name or try another query.")
     
+    else:
+        selected_food = st.text_input('Enter the name of the food:')
+        initial_values = {
+            'calories': 0,
+            'sat_fat': 0.0,
+            'sugar': 0.0,
+            'protein': 0.0
+        }
+
     # Display the input fields with initial values in two columns
     col1, col2 = st.columns(2)
 
@@ -178,30 +190,27 @@ if st.session_state.authentication_status == True:
     # Display the log food button only after points are calculated
     if st.session_state.log_food_button:
         if st.button('Log Food Entry'):
-            if selected_food:
-                try:
-                    # Ensure selected_food is a string
-                    if isinstance(selected_food, str):
-                        log_entry = {
-                            "username": username,
-                            "food_name": selected_food,
-                            "calories": calories,
-                            "sat_fat": sat_fat,
-                            "sugar": sugar,
-                            "protein": protein,
-                            "points": st.session_state.points,
-                            "timestamp": datetime.now()
-                        }
-                        food_logs_collection.insert_one(log_entry)
-                        st.success("Food entry logged successfully!")
-                        # Reset the button state
-                        st.session_state.log_food_button = False
-                    else:
-                        st.error("Selected food is not a valid string")
-                except Exception as e:
-                    st.error(f"An error occurred while logging the food entry: {e}")
-            else:
-                st.error("No food selected")
+            try:
+                # Ensure selected_food is a string
+                if isinstance(selected_food, str):
+                    log_entry = {
+                        "username": username,
+                        "food_name": selected_food,
+                        "calories": calories,
+                        "sat_fat": sat_fat,
+                        "sugar": sugar,
+                        "protein": protein,
+                        "points": st.session_state.points,
+                        "timestamp": datetime.now()
+                    }
+                    food_logs_collection.insert_one(log_entry)
+                    st.success("Food entry logged successfully!")
+                    # Reset the button state
+                    st.session_state.log_food_button = False
+                else:
+                    st.error("Selected food is not a valid string")
+            except Exception as e:
+                st.error(f"An error occurred while logging the food entry: {e}")
 
     # Display logged food entries
     st.subheader("Your Food Log")
