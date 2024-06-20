@@ -43,6 +43,26 @@ def calculate_points(calories, sat_fat, sugar, protein):
     points = (calories / 33) + (sat_fat / 9) + (sugar / 9) - (protein / 10)
     return round(points, 1)
 
+# Calculate daily SmartPoints allowance
+def calculate_daily_smartpoints(gender, age, weight, height, activity_level):
+    gender_points = 10 if gender == "Male" else 8
+    age_points = (
+        5 if 18 <= age <= 20 else
+        4 if 21 <= age <= 35 else
+        3 if 36 <= age <= 50 else
+        2 if 51 <= age <= 65 else
+        1
+    )
+    weight_points = weight // 10
+    height_points = 0 if height < 61 else 1 if height <= 70 else 2
+    activity_points = (
+        0 if activity_level == "Sedentary" else
+        2 if activity_level == "Moderately Active" else
+        4
+    )
+    total_points = gender_points + age_points + weight_points + height_points + activity_points
+    return total_points
+
 # Streamlit app layout
 st.title(':pie: Weight Watchers PyCalc :pie:')
 
@@ -266,6 +286,19 @@ if st.session_state.authentication_status == True:
                 st.write(f"Total Points for the selected date range: {total_points}")
             else:
                 st.write("No entries found for the selected date range.")
+
+    # Daily SmartPoints allowance calculation
+    st.subheader("Calculate Your Daily SmartPoints Allowance")
+
+    gender = st.selectbox("Gender", ["Male", "Female"])
+    age = st.number_input("Age", min_value=18, max_value=100, value=25)
+    weight = st.number_input("Weight (lbs)", min_value=50, max_value=500, value=150)
+    height = st.number_input("Height (inches)", min_value=48, max_value=84, value=65)
+    activity_level = st.selectbox("Activity Level", ["Sedentary", "Moderately Active", "Very Active"])
+
+    if st.button("Calculate Daily SmartPoints"):
+        daily_points = calculate_daily_smartpoints(gender, age, weight, height, activity_level)
+        st.subheader(f"Your Daily SmartPoints Allowance: {daily_points}")
 
 elif st.session_state.authentication_status == False:
     st.error("Username or password is incorrect")
